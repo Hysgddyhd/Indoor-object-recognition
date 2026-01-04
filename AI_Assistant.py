@@ -11,7 +11,16 @@ MAX_ALLOWED_TOKENS=4096
 DEEPSEEK_API='sk-09099c7f4f704fbd89916c6c7a55a70b'
 BASE_URL="https://api.deepseek.com"
 MODEL_NAME="deepseek-reasoner"
+<<<<<<< HEAD
+#openai ali key
+# DEEPSEEK_API='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'
+# BASE_URL="https://api.openai.com/v1"
+# MODEL_NAME="gpt-5-nano"
 
+#kagi fastgpt
+=======
+
+>>>>>>> 6b3d3f6b5d8a5ad1120d6a6d362fb16fccbee894
 
 class Assistant():
     client=None
