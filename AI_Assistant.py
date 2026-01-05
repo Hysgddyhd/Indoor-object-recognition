@@ -1,45 +1,30 @@
-import openai
 from openai import OpenAI
 import json
-import os
-import tiktoken
 import asyncio
-from datetime import datetime
 
-global MAX_ALLOWED_TOKENS, DEEPSEEK_API, BASE_URL, MODEL_NAME
-MAX_ALLOWED_TOKENS=4096
-DEEPSEEK_API='sk-09099c7f4f704fbd89916c6c7a55a70b'
-BASE_URL="https://api.deepseek.com"
-MODEL_NAME="deepseek-reasoner"
-<<<<<<< HEAD
-#openai ali key
-# DEEPSEEK_API='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'
-# BASE_URL="https://api.openai.com/v1"
-# MODEL_NAME="gpt-5-nano"
 
-#kagi fastgpt
-=======
-
->>>>>>> 6b3d3f6b5d8a5ad1120d6a6d362fb16fccbee894
 
 class Assistant():
-    client=None
-    response=''
-    responses = []
-    history=[]
-    token_count=0
-    enc = tiktoken.encoding_for_model('gpt-4o')
-
+    # Configuration
+    MAX_ALLOWED_TOKENS = 4096
+    BASE_URL = "http://localhost:11434/v1"
+    MODEL_NAME = "alibayram/smollm3"
     def __init__(self):
-        self.client=OpenAI(
-            api_key=DEEPSEEK_API,
-            base_url=BASE_URL
+        self.client = OpenAI(
+            api_key='ollama',
+            base_url=self.BASE_URL
         )
+        self.response = None
+        self.responses = []
+        self.history = []
+        self.token_count = 0
 
-    async def answer(self, message):#chat without history
-        print(self.get_token_count(message))
+    async def answer(self, message):
+        """Chat without history"""
+        print(f"Token count: {self.get_token_count(message)}")
+
         self.response = self.client.chat.completions.create(
-            model=MODEL_NAME,
+            model=self.MODEL_NAME,
             messages=[
                 {
                     "role": "user",
@@ -48,37 +33,52 @@ class Assistant():
             ],
             stream=False
         )
+
         self.printResponse()
         self.responses.append({'answer': self.response})
 
     async def chat(self, message):
+        """Chat with history"""
         self.get_token_count(message)
-        self.history.append({'role':'user', 'content': message})
+        self.history.append({'role': 'user', 'content': message})
+
         self.response = self.client.chat.completions.create(
-            model=MODEL_NAME,
+            model=self.MODEL_NAME,
             messages=self.history,
             stream=False
         )
-        self.history.append({'role':'assistant', 'content': self.response.choices[0].message.content})
-        #self.printResponse()
+
+        assistant_message = self.response.choices[0].message.content
+        self.history.append({'role': 'assistant', 'content': assistant_message})
         self.responses.append({'chat': self.response})
-    
+
+        return assistant_message
+
     def get_token_count(self, text):
-        self.token_count=self.token_count+len(self.enc.encode(text))
-        return len(self.enc.encode(text))
+        """Estimate token count (rough approximation)"""
+        # SmolLM3 uses different tokenizer, this is approximate
+        # For accurate counting, use Ollama's API or model-specific tokenizer
+        estimated_tokens = len(text.split()) * 1.3  # Rough estimate
+        self.token_count += estimated_tokens
+        return int(estimated_tokens)
 
     def getResponse(self):
-        reasoning_content = self.response.choices[0].message.reasoning_content
+        """Get response content, optionally parse as JSON"""
         content = self.response.choices[0].message.content
-        return json.loads(content)
+
+        try:
+            # Try to parse as JSON if content looks like JSON
+            if content.strip().startswith('{') or content.strip().startswith('['):
+                return json.loads(content)
+            return content
+        except json.JSONDecodeError:
+            return content
 
     def printResponse(self):
-        reasoning_content = self.response.choices[0].message.reasoning_content
+        """Print the response"""
         content = self.response.choices[0].message.content
-        print(f"Reasoning: {reasoning_content};")
-        print(f"\nResponse: {content}")
+        print(f"Response: {content}")
 
-if __name__=='__main__':
-    ai=Assistant()
+if __name__ == '__main__':
+    ai = Assistant()
     asyncio.run(ai.answer("What is the weather today in Malaysia Selangor"))
-

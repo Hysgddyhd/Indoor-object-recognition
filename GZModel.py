@@ -14,13 +14,8 @@ class Model():
 
     def setup(self):
         self.name = os.popen('gz model --list 2>/dev/null | grep "x500"').read().split('-')[1].strip()
-<<<<<<< HEAD
-        # self.updatePos()
-        # self.getPos()
-=======
         self.updatePos()
         self.getPos()
->>>>>>> 6b3d3f6b5d8a5ad1120d6a6d362fb16fccbee894
 
     def getName(self):
         return self.name

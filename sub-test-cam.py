@@ -20,14 +20,7 @@ class camLinker():
     fourcc = cv2.VideoWriter_fourcc(*'XVID')  
     out = cv2.VideoWriter('footage-3.avi',fourcc, 4, (640,360))
     #load model
-<<<<<<< HEAD
-    try:
-        model = YOLO(args.model)  # load a partially trained model
-    except FileNotFoundError:
-        model = YOLO("/home/yuntian/Drone-workspace/best_v14.pt")
-=======
     model = YOLO(args.model)  # load a partially trained model
->>>>>>> 6b3d3f6b5d8a5ad1120d6a6d362fb16fccbee894
     node = Node()
     image_topic = os.popen('gz topic --list | grep /camera_link/sensor/IMX214/image').read().split('\n')[0]
     image_rgb=np.zeros((640,360,3), np.uint8)
@@ -54,17 +47,10 @@ class camLinker():
                 #print("Unsubcribe done" if self.node.unsubscribe(self.image_topic) else "Nope")
                 self.node.unsubscribe(self.image_topic)
                 self.node.subscribe(msg_type=Image, topic=self.image_topic, callback=lambda msg: self.imagemsg_cb(msg=msg))
-<<<<<<< HEAD
-                # cv2.imshow("Raw Image", cv2.resize(self.image_rgb, (320,180)))
-                # cv2.waitKey(1)
-                self.image_detection(self.image_rgb)
-                cv2.imshow("Detection", cv2.resize(self.detect_result, (640,360)))
-=======
                 cv2.imshow("Raw Image", cv2.resize(self.image_rgb, (320,180)))
                 cv2.waitKey(1)
                 self.image_detection(self.image_rgb)
                 cv2.imshow("Detection", cv2.resize(self.detect_result, (480,270)))
->>>>>>> 6b3d3f6b5d8a5ad1120d6a6d362fb16fccbee894
                 cv2.waitKey(1)
                 time.sleep(0.05)
             # out.write(image_rgb)
