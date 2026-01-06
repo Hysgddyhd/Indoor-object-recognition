@@ -8,7 +8,7 @@ class Assistant():
     # Configuration
     MAX_ALLOWED_TOKENS = 4096
     BASE_URL = "http://localhost:11434/v1"
-    MODEL_NAME = "llama3.2:1b"
+    MODEL_NAME = "alibayram/smollm3"
     def __init__(self):
         self.client = OpenAI(
             api_key='ollama',

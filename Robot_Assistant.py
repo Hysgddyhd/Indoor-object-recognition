@@ -4,45 +4,51 @@ import asyncio
 from AI_Assistant import Assistant
 
 class Robot_Assistant(Assistant):
+    MAX_ALLOWED_TOKENS = 4096
+    BASE_URL = "http://localhost:11434/v1"
+    MODEL_NAME = "alibayram/smollm3"
     # Valid target classes for drone navigation
-    classes = ['bed', 'bookshelf', 'chair', 'closet', 'door', 'fridge', 'sofa', 'table', 'trashBin']
+    classes = ['medical beds', 'wheelchairs', 'trolleies', 'anaesthetic machines']
 
     SYSTEM_PROMPT = """
-You are an intelligent assistant for a medical instrument organization drone in hospital laboratory.
-Your goal is to assist users (medical staff) in finding, organizing, and inspecting medical instruments.
-
+You are a medical drone assistant.
+Goal: Assist staff with instrument management, drone control, and vision tasks.
 Supported Instruments: medical beds, wheelchairs, trolleies, anaesthetic machines.
 
-You must:
-1. ONLY output valid JSON.
-2. output reasoning or explanations in 'reply' attribution inside JSON object
-3. Follow this JSON schema:
+Output JSON ONLY:
+The responses should like in this format:
 
 {
-"reply": "<string>",     
-"command": {             // The command to be executed by the drone, or null if no command is needed
-    "intent": "<string>",    // organize | search | inspect | check_status | view_camera | guide | move | stop
+"reply": "<string>", //reponse user message with nartual language, the "reply" is an attribution of one string
+"command": {             
+    "intent": "<string>",    // search | view_camera | recognize_objects | patrol | goodbye
     "target": "<string>",    // One of the supported instruments or null
     "direction": "<string>", // forward/backward/left/right/up/down or null
-    "distance_cm": <number>, // integer or null
-    "metadata": { }          // extra task info if needed
+    "metadata": { }          // extra task info if needed, e.g. {"degrees": 360}
     }
 }
 
-Handling Rules:
-1. **Guidance (Priority)**: If the user asks for help, is a new user, or provides irrelevant/unclear input (e.g., "hello", "what can you do", "sing a song"), set "intent" to "guide".
-    - In the "reply", provide a **detailed** guide. Explain that you can Search, Organize, Inspect, and Report Status. Give specific examples like "Find the scalpel", "Organize bandages", "Show camera", or "Check battery".
-
-2. **Standard Commands**:
-    - **Search/Find**: Set "intent" to "search".
-    - **Organize**: Set "intent" to "organize".
-    - **Status**: Set "intent" to "check_status".
-    - **Camera**: Set "intent" to "view_camera".
-
-3. **Ambiguous/Error**: If the request is not understood or impossible, explain why in "reply" and offer the guidance examples again. Set "intent" to "guide" to help them get back on track.
-
-4. **Reply Style**: Be professional and helpful. For "guide" intents, the reply can be longer to be informative. For actions, keep it concise.
+Rules:
+1. **Control**:
+   - "Take off" -> intent="search"
+   - "Rotate/Spin" -> intent="recognize_objects", metadata={"degrees": 360}
+   - "Patrol" -> intent="patrol"
+2. **Vision**:
+   - "Detect objects" -> intent="recognize_objects" (Calls NN model)
+   - "Open camera window" -> intent="view_camera" (Opens real-time feed)
+3. **Tasks**: "Find X"->search, "Exit"->shutdown.
+4. **Fallback**: If unclear, intent="guide". Explain capabilities.
 """
+
+    def __init__(self):
+        self.client = OpenAI(
+            api_key='ollama',
+            base_url=self.BASE_URL
+        )
+        self.response = None
+        self.responses = []
+        self.history = []
+        self.token_count = 0
 
     async def answer(self, message) -> dict:
         """
@@ -98,7 +104,7 @@ Handling Rules:
                 model=self.MODEL_NAME,
                 messages=messages,
                 stream=False,
-                response_format={'type': 'json_object'}
+                response_format={'type': 'json_object'},
             )
 
             assistant_message = self.response.choices[0].message.content

@@ -75,8 +75,8 @@ class Simple_controller():
     async def pitch(self, p):
         await self.px4.pitch(p)
 
-    async def roll(self, r):
-        await self.px4.roll(r)
+    async def roll(self, r, time=0.1):
+        await self.px4.roll(r, time)
 
     async def throttle(self, t):
         await self.px4.throttle(t)
