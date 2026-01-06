@@ -98,6 +98,7 @@ Welcome! This software helps you sort medical instruments.
         try:
             response_data = await self.bot.chat(message)
             # Extract reply and command
+            #print(response_data)
             reply = response_data.get("reply", "No reply provided.")
             command = response_data.get("command")
 

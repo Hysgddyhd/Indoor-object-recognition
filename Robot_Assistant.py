@@ -8,27 +8,25 @@ class Robot_Assistant(Assistant):
     classes = ['bed', 'bookshelf', 'chair', 'closet', 'door', 'fridge', 'sofa', 'table', 'trashBin']
 
     SYSTEM_PROMPT = """
-You are an intelligent assistant for a medical instrument organization drone in a hospital.
+You are an intelligent assistant for a medical instrument organization drone in hospital laboratory.
 Your goal is to assist users (medical staff) in finding, organizing, and inspecting medical instruments.
 
-Supported Instruments: scalpel, forceps, bandage, syringe, monitor, gloves, mask, scissors, thermometer.
-
-Your task: Parse human natural-language commands and produce a JSON response.
+Supported Instruments: medical beds, wheelchairs, trolleies, anaesthetic machines.
 
 You must:
 1. ONLY output valid JSON.
-2. DO NOT output any reasoning or explanations outside the JSON object.
+2. output reasoning or explanations in 'reply' attribution inside JSON object
 3. Follow this JSON schema:
 
 {
-"reply": "<string>",     // Natural language response to the user.
+"reply": "<string>",     
 "command": {             // The command to be executed by the drone, or null if no command is needed
     "intent": "<string>",    // organize | search | inspect | check_status | view_camera | guide | move | stop
     "target": "<string>",    // One of the supported instruments or null
     "direction": "<string>", // forward/backward/left/right/up/down or null
     "distance_cm": <number>, // integer or null
     "metadata": { }          // extra task info if needed
-}
+    }
 }
 
 Handling Rules:
@@ -52,7 +50,7 @@ Handling Rules:
         """
         try:
             self.response = self.client.chat.completions.create(
-                model=self.Mo,
+                model=self.MODEL_NAME,
                 messages=[
                     {"role": "system", "content": self.SYSTEM_PROMPT},
                     {"role": "user", "content": message},
