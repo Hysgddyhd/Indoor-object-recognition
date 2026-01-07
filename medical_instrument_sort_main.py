@@ -53,10 +53,10 @@ class Medical_assistant(ChatApp):
             # Example: image = self.drone.camera.capture(target)
 
         elif intent == "patrol":
-            await self.patrol()
+            await self.patrol(command.get("area"))
             self.append_message(sender="System",message=f"   -> Patrolling: {target}")
  
-        elif intent == 'goodbye':
+        elif intent == 'shutdown':
             self.append_message(sender="System",message=f"Landing...")
             await self.controller.land()
             sys.exit()
@@ -98,8 +98,17 @@ class Medical_assistant(ChatApp):
             await asyncio.sleep(0.05)
         subprocess.Popen(["/usr/bin/python", "/home/yuntian/Drone-workspace/sub-test-cam.py"])
 
-    async def patrol(self):
-        await self.controller.patrol()
+    async def patrol(self, area):
+        if area == "full":
+            csv_file = 'circle_full.csv'
+        elif area == 'partial':
+            csv_file = 'circle_small.csv'
+        elif area == 'static_point':
+            csv_file = '360_rotate.csv'
+        else:
+            self.append_message(sender="System",message=f"   Invaild area value: {area}")
+            return  
+        await self.controller.patrol(csv_file)    
 
 if __name__ == "__main__":
     root = tk.Tk()

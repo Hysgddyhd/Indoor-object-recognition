@@ -77,7 +77,7 @@ class Multi_controller(Simple_controller):
         await self.gz_px4.yaw(self.px4, y)
         self.is_hold=True
 
-    async def patrol(self):
+    async def patrol(self, csv_file):
         drone = self.px4.px4
         # Define a dictionary to map mode codes to their descriptions
         mode_descriptions = {
@@ -117,7 +117,7 @@ class Multi_controller(Simple_controller):
             return
 
         # Read data from the CSV file
-        async with await anyio.open_file("circle.csv", "r", newline="") as csvfile:
+        async with await anyio.open_file(csv_file, "r", newline="") as csvfile:
             content = await csvfile.read()
         waypoints = [
             (
